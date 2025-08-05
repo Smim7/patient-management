@@ -1,0 +1,14 @@
+### upadte an existong paiteint entity
+PUT http://localhost:4000/patients/123e4567-e89b-12d3-a456-426614174000
+Content-Type: application/json
+
+{
+  "name" : "Somaya Mim" ,
+  "email" : "" ,
+  "address" : "222 st main" ,
+  "dateOfBirth" : "1888-01-21"
+
+}
+
+
+###
