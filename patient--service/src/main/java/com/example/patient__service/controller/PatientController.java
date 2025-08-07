@@ -2,6 +2,7 @@ package com.example.patient__service.controller;
 
 import com.example.patient__service.dto.PatientRequestDto;
 import com.example.patient__service.dto.PatientResponseDto;
+import com.example.patient__service.dto.PatientWithBillingResponseDto;
 import com.example.patient__service.dto.validators.CreatePatientValidationGroup;
 import com.example.patient__service.service.PatientService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,6 +41,17 @@ public class PatientController {
         PatientResponseDto patientResponseDto = patientService.createPatient(patientRequestDto);
         return ResponseEntity.ok().body(patientResponseDto);
     }
+//@PostMapping
+//@Operation(summary = "Create a new patient")
+//public ResponseEntity<PatientWithBillingResponseDto> createPatient(
+//        @Validated({Default.class, CreatePatientValidationGroup.class})
+//        @RequestBody PatientRequestDto patientRequestDto) {
+//
+//    PatientWithBillingResponseDto response =
+//            patientService.createPatient(patientRequestDto);
+//
+//    return ResponseEntity.ok().body(response);
+//}
 
     @PutMapping("/{id}")
     @Operation(summary = "Update existing patient")

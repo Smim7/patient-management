@@ -1,9 +1,14 @@
 package com.example.patient__service.service;
 
+import billing.BillingResponse;
+import com.example.patient__service.dto.BillingResponseDto;
 import com.example.patient__service.dto.PatientRequestDto;
 import com.example.patient__service.dto.PatientResponseDto;
+import com.example.patient__service.dto.PatientWithBillingResponseDto;
 import com.example.patient__service.exception.EmailAlreadyExistsException;
 import com.example.patient__service.exception.PatientNotFoundException;
+import com.example.patient__service.grpc.BillingServiceGrpcClient;
+import com.example.patient__service.kafka.KafkaProducer;
 import com.example.patient__service.mapper.PatientMapper;
 import com.example.patient__service.model.Patient;
 import com.example.patient__service.repository.PatientRepository;
@@ -16,9 +21,13 @@ import java.util.UUID;
 @Service
 public class PatientService {
     private PatientRepository patientRepository;
+    private  final BillingServiceGrpcClient billingServiceGrpcClient;
+    private final KafkaProducer kafkaProducer;
 
-    public PatientService(PatientRepository patientRepository) {
+    public PatientService(PatientRepository patientRepository, BillingServiceGrpcClient billingServiceGrpcClient, KafkaProducer kafkaProducer) {
         this.patientRepository = patientRepository;
+        this.billingServiceGrpcClient = billingServiceGrpcClient;
+        this.kafkaProducer = kafkaProducer;
     }
 
     public List<PatientResponseDto> getPatients() {
@@ -37,8 +46,34 @@ public class PatientService {
         Patient newPatient = patientRepository.save(
                 PatientMapper.toModel(patientRequestDto));
 
+        billingServiceGrpcClient.createBillingAccount(newPatient.getId().toString(),
+                newPatient.getName(),newPatient.getEmail());
+
+        kafkaProducer.sendEvent(newPatient);
+
+
         return PatientMapper.toDTO(newPatient);
     }
+//public PatientWithBillingResponseDto createPatient(PatientRequestDto patientRequestDto) {
+//    if (patientRepository.existsByEmail(patientRequestDto.getEmail())) {
+//        throw new EmailAlreadyExistsException(
+//                "A patient with this email already exists: " + patientRequestDto.getEmail());
+//    }
+//
+//    Patient newPatient = patientRepository.save(PatientMapper.toModel(patientRequestDto));
+//
+//    BillingResponse grpcResponse = billingServiceGrpcClient.createBillingAccount(
+//            newPatient.getId().toString(),
+//            newPatient.getName(),
+//            newPatient.getEmail());
+//
+//    BillingResponseDto billingDto = new BillingResponseDto(
+//            grpcResponse.getAccountId(),     // example field
+//            grpcResponse.getStatus()         // example field
+//    );
+//
+//    return new PatientWithBillingResponseDto(PatientMapper.toDTO(newPatient), billingDto);
+//}
 
     public PatientResponseDto updatePatient(UUID id, PatientRequestDto patientRequestDto) {
 
